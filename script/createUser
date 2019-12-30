@@ -1,0 +1,24 @@
+#!/bin/bash
+
+echo "Entrez le nom des utilisateurs"
+read nom
+
+carac=0
+
+while [ $carac -lt 5 ]
+do
+	echo "Nombre de caracteres pour le mot de passe: (minimum 5 lettres)"
+	read carac
+done
+
+echo "Entrez le nombre d'utilisateurs que vous souhaitez:"
+read nbr
+
+for id in `seq $nbr`
+do
+	mdp=`pwgen $carac 1`
+	echo "$nom$id;Cleartext-Password;:=;$mdp" >> ../group/$nom.csv
+done
+
+echo "Utilisateurs créer dans /etc/freeradius/3.0/group/$nom"
+

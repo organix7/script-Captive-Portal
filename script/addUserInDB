@@ -1,0 +1,24 @@
+#!/bin/bash
+
+echo "Le groupe d'utilisateurs à ajouter a la base de données:" 
+read group
+echo "Le nombre de connexion par utilisateurs autorisées:"
+read nbr
+echo "Le temps de connexion FORMAT(HHMM-HHMM):"
+read timer
+
+while read ligne
+do
+
+	username=`echo $ligne | cut -d";" -f 1`
+	mysql -uroot -proot radius -e "INSERT INTO radusergroup (username, groupname, priority) VALUES (\"$username\", \"$group\", \"1\");" 2> /dev/null
+
+done < ../group/$group.csv
+
+mysql -uroot -proot radius -e "INSERT INTO radgroupcheck (groupname, attribute, op, value) VALUES (\"$group\", \"Simultaneous-Use\", \":=\", $nbr);" 2> /dev/null
+
+if [[ $timer =~ ^(0[0-9]|1[0-9]|2[0-3]|[0-9])[0-5][0-9]-(0[0-9]|1[0-9]|2[0-3]|[0-9])[0-5][0-9]$ ]]
+then
+	mysql -uroot -proot radius -e "INSERT INTO radgroupcheck (groupname, attribute, op, value) VALUES (\"$group\", \"Login-Time\", \":=\", \"Al$timer\");" 2> /dev/null
+fi
+mysql -uroot -proot radius -e "LOAD DATA LOCAL INFILE '../group/$group.csv' replace INTO TABLE radcheck FIELDS TERMINATED BY ';' LINES TERMINATED BY '\n' (username, attribute , op, value) ;" 2> /dev/null

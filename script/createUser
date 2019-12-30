@@ -1,5 +1,12 @@
 #!/bin/bash
 
+apt install pwgen > /dev/null 2>&1
+
+if [ ! -d "/etc/freeradius/3.0/group" ]
+then
+	mkdir /etc/freeradius/3.0/group
+fi
+
 echo "Entrez le nom des utilisateurs"
 read nom
 
